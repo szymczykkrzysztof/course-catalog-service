@@ -57,7 +57,7 @@ tasks.withType<Test> {
 }
 
 sourceSets {
-    val test by getting {
+    getByName("test") {
         java.setSrcDirs(listOf("src/test/unit", "src/test/intg"))
     }
 }

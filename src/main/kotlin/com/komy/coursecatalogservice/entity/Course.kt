@@ -14,4 +14,4 @@ data class Course(
     val id: Int?,
     var name: String,
     var category: String,
-    )
+)
