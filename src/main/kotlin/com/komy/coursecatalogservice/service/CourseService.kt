@@ -4,16 +4,20 @@ import com.komy.coursecatalogservice.dto.CourseDTO
 import com.komy.coursecatalogservice.entity.Course
 import com.komy.coursecatalogservice.exception.CourseNotFoundException
 import com.komy.coursecatalogservice.repository.CourseRepository
+import com.komy.coursecatalogservice.security.UserRepository
 import mu.KLogging
 import org.springframework.stereotype.Service
 
 @Service
-class CourseService(private val courseRepository: CourseRepository) {
+class CourseService(private val courseRepository: CourseRepository, private val userRepository: UserRepository) {
     companion object : KLogging()
 
-    fun addCourse(courseDTO: CourseDTO): CourseDTO {
+    fun addCourse(courseDTO: CourseDTO,principal: java.security.Principal): CourseDTO {
+        val username = principal.name
+        val user = userRepository.findByLogin(username)
+            ?: throw RuntimeException("User $username not found")
         val courseEntity = courseDTO.let {
-            Course(null, it.name, it.category)
+            Course(null, it.name, it.category, ownerId = user.id!!)
         }
         courseRepository.save(courseEntity)
         logger.info("Course added: $courseEntity")

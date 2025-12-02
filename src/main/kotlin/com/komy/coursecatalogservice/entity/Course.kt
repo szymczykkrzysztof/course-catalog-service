@@ -14,4 +14,5 @@ data class Course(
     val id: Int?,
     var name: String,
     var category: String,
+    val ownerId: Long? = null
 )

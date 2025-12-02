@@ -3,6 +3,7 @@ package com.komy.coursecatalogservice.controller
 import com.komy.coursecatalogservice.dto.CourseDTO
 import com.komy.coursecatalogservice.service.CourseService
 import org.springframework.http.HttpStatus
+import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.*
 
 @RestController
@@ -11,7 +12,7 @@ class CourseController(private val courseService: CourseService) {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    fun addCourse(@RequestBody courseDTO: CourseDTO): CourseDTO = courseService.addCourse(courseDTO)
+    fun addCourse(@RequestBody courseDTO: CourseDTO, principal: java.security.Principal): CourseDTO = courseService.addCourse(courseDTO,principal)
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
@@ -23,10 +24,12 @@ class CourseController(private val courseService: CourseService) {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@courseSecurity.isOwner(#id, authentication)")
     fun updateCourse(@PathVariable("id") id: Int, @RequestBody courseDTO: CourseDTO): CourseDTO =
         courseService.updateCourse(id, courseDTO)
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("@courseSecurity.isOwner(#id, authentication)")
     fun deleteCourse(@PathVariable("id") id: Int) = courseService.deleteCourse(id)
 }
