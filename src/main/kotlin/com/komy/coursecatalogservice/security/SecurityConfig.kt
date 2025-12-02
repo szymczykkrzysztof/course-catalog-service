@@ -37,10 +37,10 @@ class SecurityConfig(
             .csrf { it.disable() }
             .headers { it.frameOptions { frame -> frame.disable() } } // dla H2
             .authorizeHttpRequests {
-                it.requestMatchers("/auth/login").permitAll()
-                it.requestMatchers("/auth/register").permitAll()
+                it.requestMatchers("/api/auth/login").permitAll()
+                it.requestMatchers("/api/auth/register").permitAll()
                 it.requestMatchers("/h2-console/**").permitAll()
-                it.requestMatchers("/v1/greetings/**").authenticated()
+                it.requestMatchers("/v1/greetings/**").permitAll()
                 it.requestMatchers("/courses/**").authenticated()
                 it.anyRequest().authenticated()
             }

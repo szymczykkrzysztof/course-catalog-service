@@ -18,7 +18,7 @@ class RegistrationService(
         val user = AppUser(
             login = request.username,
             hashedPassword = passwordEncoder.encode(request.password),
-            roles = setOf(Role.USER)  // domyślna rola USER
+            roles = setOf(Role.ADMIN)  // domyślna rola Admin
         )
 
         val saved = userRepository.save(user)

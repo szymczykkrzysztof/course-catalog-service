@@ -22,17 +22,17 @@ class CourseService(private val courseRepository: CourseRepository, private val 
         courseRepository.save(courseEntity)
         logger.info("Course added: $courseEntity")
         return courseEntity.let {
-            CourseDTO(it.id, it.name, it.category)
+            CourseDTO(it.id, it.name, it.category, it.ownerId)
         }
     }
 
     fun retrieveAllCourses(): List<CourseDTO> {
-        val courseDTOS = courseRepository.findAll().map { CourseDTO(it.id, it.name, it.category) }
+        val courseDTOS = courseRepository.findAll().map { CourseDTO(it.id, it.name, it.category, it.ownerId) }
         return courseDTOS
     }
 
     fun retrieveCourseById(id: Int): CourseDTO? {
-        return courseRepository.findById(id).map { CourseDTO(it.id, it.name, it.category) }.orElse(null)
+        return courseRepository.findById(id).map { CourseDTO(it.id, it.name, it.category, it.ownerId) }.orElse(null)
     }
 
     fun updateCourse(id: Int, courseDTO: CourseDTO): CourseDTO {
@@ -42,7 +42,7 @@ class CourseService(private val courseRepository: CourseRepository, private val 
                 it.name = courseDTO.name
                 it.category = courseDTO.category
                 courseRepository.save(it)
-                CourseDTO(it.id, it.name, it.category)
+                CourseDTO(it.id, it.name, it.category, it.ownerId)
             }
         } else {
             throw CourseNotFoundException("No course found for the passed Id: $id")

@@ -1,24 +1,23 @@
 package com.komy.coursecatalogservice.controller
 
 import com.komy.coursecatalogservice.service.GreetingsService
-import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
+import io.mockk.mockk
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
-import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
 import kotlin.test.Test
 
-@WebMvcTest(controllers = [GreetingController::class])
 @ActiveProfiles("test")
 class GreetingControllerUnitTest {
-    @MockkBean
     lateinit var greetingsServiceMock: GreetingsService
     private lateinit var client: WebTestClient
 
     @BeforeEach
     fun setUp() {
+        // inicjalizacja mocka, aby uniknąć błędu lateinit property ... has not been initialized
+        greetingsServiceMock = mockk()
         val controller = GreetingController(greetingsServiceMock)
         client = WebTestClient.bindToController(controller).build()
     }

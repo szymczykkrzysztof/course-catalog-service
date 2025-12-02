@@ -8,7 +8,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
@@ -16,23 +15,24 @@ import org.springframework.test.web.reactive.server.WebTestClient
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class CourseControllerIntTests(@Autowired private val courseRepository: CourseRepository) {
-    @LocalServerPort
-    private var port: Int = SpringBootTest.WebEnvironment.RANDOM_PORT.ordinal
+class CourseControllerIntTests(@Autowired private val courseRepository: CourseRepository) : BaseIntegrationTest() {
 
-    private lateinit var client: WebTestClient
+    lateinit var token: String
 
     @BeforeEach
     fun setUp() {
         client = WebTestClient.bindToServer()
             .baseUrl("http://localhost:$port")
             .build()
+        token = registerAndLogin()
     }
 
     @Test
     fun addCourse() {
-        val courseDTO = CourseDTO(id = null, "Kotlin", "Programming Language")
+
+        val courseDTO = CourseDTO(id = null, "Kotlin", "Programming Language", ownerId = 1)
         val result = client.post().uri("/v1/courses")
+            .header("Authorization", "Bearer $token")
             .bodyValue(courseDTO)
             .exchange()
             .expectStatus().isCreated
@@ -50,9 +50,13 @@ class CourseControllerIntTests(@Autowired private val courseRepository: CourseRe
     @Test
     fun getAllCourse() {
         val courseDTOS =
-            listOf(Course(id = null, "Kotlin", "Programming Language"), Course(id = null, "Spring Boot", "Framework"))
+            listOf(
+                Course(id = null, "Kotlin", "Programming Language", ownerId = 1),
+                Course(id = null, "Spring Boot", "Framework", ownerId = 1)
+            )
         courseRepository.saveAll(courseDTOS)
         val result = client.get().uri("/v1/courses")
+            .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
             .expectBodyList(CourseDTO::class.java)
@@ -67,6 +71,7 @@ class CourseControllerIntTests(@Autowired private val courseRepository: CourseRe
         val createdCourse = courseRepository.save(course)
 
         val result = client.get().uri("/v1/courses/${createdCourse.id}")
+            .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isOk
             .expectBody(CourseDTO::class.java)
@@ -80,11 +85,16 @@ class CourseControllerIntTests(@Autowired private val courseRepository: CourseRe
     @Test
     fun updateCourse() {
         val courses =
-            listOf(Course(id = null, "Kotlin", "Programming Language"), Course(id = null, "Spring Boot", "Framework"))
+            listOf(
+                Course(id = null, "Kotlin", "Programming Language", ownerId = 1),
+                Course(id = null, "Spring Boot", "Framework", ownerId = 1)
+            )
         courseRepository.saveAll(courses)
-        val updateCourseDTO = CourseDTO(id = courses[0].id, "Kotlin Updated", "Programming Language Updated")
+        val updateCourseDTO =
+            CourseDTO(id = courses[0].id, "Kotlin Updated", "Programming Language Updated", ownerId = 1)
 
         val createdCourse = client.put().uri("/v1/courses/${courses[0].id}")
+            .header("Authorization", "Bearer $token")
             .bodyValue(updateCourseDTO)
             .exchange()
             .expectStatus().isOk
@@ -97,14 +107,16 @@ class CourseControllerIntTests(@Autowired private val courseRepository: CourseRe
 
     @Test
     fun deleteCourse() {
-        val course = Course(id = null, "Kotlin", "Programming Language")
+        val course = Course(id = null, "Kotlin", "Programming Language", ownerId = 1)
         val createdCourse = courseRepository.save(course)
         client.delete().uri("/v1/courses/${createdCourse.id}")
+            .header("Authorization", "Bearer $token")
             .exchange()
             .expectStatus().isNoContent
 
         client.delete().uri("/v1/courses/${createdCourse.id}")
+            .header("Authorization", "Bearer $token")
             .exchange()
-            .expectStatus().is5xxServerError
+            .expectStatus().isForbidden
     }
 }
