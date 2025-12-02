@@ -12,6 +12,7 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
+import org.springframework.web.util.UriComponentsBuilder
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
@@ -59,6 +60,23 @@ class CourseControllerIntTests(@Autowired private val courseRepository: CourseRe
             .returnResult()
             .responseBody!!
         Assertions.assertEquals(courseDTOS.size, result.size)
+    }
+
+    @Test
+    fun getAllCourse_ByName() {
+        val courseDTOS =
+            listOf(Course(id = null, "Kotlin", "Programming Language"), Course(id = null, "Spring Boot", "Framework"))
+        courseRepository.saveAll(courseDTOS)
+        val uri = UriComponentsBuilder.fromUriString("/v1/courses")
+            .queryParam("course_name","Kotlin")
+            .toUriString()
+        val result = client.get().uri(uri)
+            .exchange()
+            .expectStatus().isOk
+            .expectBodyList(CourseDTO::class.java)
+            .returnResult()
+            .responseBody!!
+        Assertions.assertEquals(1, result.size)
     }
 
     @Test
