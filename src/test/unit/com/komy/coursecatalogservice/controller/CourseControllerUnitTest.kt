@@ -1,7 +1,7 @@
 package com.komy.coursecatalogservice.controller
 
 import com.komy.coursecatalogservice.dto.CourseDTO
-import com.komy.coursecatalogservice.entity.Course
+import com.komy.coursecatalogservice.exceptionhandler.GlobalErrorHandler
 import com.komy.coursecatalogservice.service.CourseService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.every
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.web.reactive.server.WebTestClient
-import com.komy.coursecatalogservice.exceptionhandler.GlobalErrorHandler
 
 @WebMvcTest(controllers = [CourseController::class])
 @ActiveProfiles("test")
@@ -32,7 +31,7 @@ class CourseControllerUnitTest {
 
     @Test
     fun addCourse() {
-        val courseDTO = CourseDTO(id = null, "Kotlin", "Programming Language")
+        val courseDTO = CourseDTO(id = null, "Kotlin", "Programming Language", instructorId = 1)
         every { courseServiceMockk.addCourse(any()) } returns courseDTO.copy(id = 1)
         val result = client.post().uri("/v1/courses")
             .bodyValue(courseDTO)
@@ -51,7 +50,7 @@ class CourseControllerUnitTest {
 
     @Test
     fun addCourse_validation() {
-        val courseDTO = CourseDTO(id = null, "", "")
+        val courseDTO = CourseDTO(id = null, "", "", instructorId = null)
         every { courseServiceMockk.addCourse(any()) } returns courseDTO.copy(id = 1)
         val result = client.post().uri("/v1/courses")
             .bodyValue(courseDTO)
@@ -60,13 +59,13 @@ class CourseControllerUnitTest {
             .expectBody(String::class.java)
             .returnResult()
             .responseBody
-        Assertions.assertEquals("courseDTO.category must not be blank, courseDTO.name must not be blank", result)
+        Assertions.assertEquals("courseDTO.category must not be blank, courseDTO.instructorId must not be null, courseDTO.name must not be blank", result)
 
     }
 
     @Test
     fun addCourse_runtimeException() {
-        val courseDTO = CourseDTO(id = null, "Kotlin", "Programming Language")
+        val courseDTO = CourseDTO(id = null, "Kotlin", "Programming Language", instructorId = 1)
         val message="Unexpected error occurred while processing request"
         every { courseServiceMockk.addCourse(any()) } throws RuntimeException(message)
         val result = client.post().uri("/v1/courses")
@@ -88,12 +87,14 @@ class CourseControllerUnitTest {
                 CourseDTO(
                     1,
                     "Kotlin",
-                    "Programming Language"
+                    "Programming Language",
+                    instructorId = 1
                 ),
                 CourseDTO(
                     2,
                     "React",
-                    "Programming Language"
+                    "Programming Language",
+                    instructorId = 1
                 )
             )
         )
@@ -108,14 +109,13 @@ class CourseControllerUnitTest {
 
     @Test
     fun updateCourse() {
-        val courses =
-            listOf(Course(id = null, "Kotlin", "Programming Language"), Course(id = null, "Spring Boot", "Framework"))
         every { courseServiceMockk.updateCourse(any(), any()) } returns CourseDTO(
             100,
             "Kotlin Updated",
-            "Programming Language Updated"
+            "Programming Language Updated",
+            instructorId = 1
         )
-        val updateCourseDTO = CourseDTO(id = 100, "Kotlin Updated", "Programming Language Updated")
+        val updateCourseDTO = CourseDTO(id = 100, "Kotlin Updated", "Programming Language Updated", instructorId = 1)
 
         val createdCourse = client.put().uri("/v1/courses/100")
             .bodyValue(updateCourseDTO)

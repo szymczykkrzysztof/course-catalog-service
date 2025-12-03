@@ -1,6 +1,8 @@
 package com.komy.coursecatalogservice.repository
 
 import com.komy.coursecatalogservice.entity.Course
+import com.komy.coursecatalogservice.entity.Instructor
+import com.komy.coursecatalogservice.util.PostgreSQLContainerInitializer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -9,6 +11,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import java.util.stream.Stream
@@ -16,16 +19,19 @@ import java.util.stream.Stream
 @DataJpaTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-class CourseRepositoryIntTest {
+@AutoConfigureTestDatabase(replace= AutoConfigureTestDatabase.Replace.NONE)
+class CourseRepositoryIntTest : PostgreSQLContainerInitializer(){
     @Autowired
     lateinit var courseRepository: CourseRepository
-
+    @Autowired lateinit var instructorRepository: InstructorRepository
     @BeforeEach
     fun setUp() {
+        val instructor = Instructor(id = null, name = "Krzysztof")
+        instructorRepository.save(instructor)
         val courses =
             listOf(
-                Course(id = null, "Kotlin Language", "Programming Language"),
-                Course(id = null, "React Language", "Framework")
+                Course(id = null, "Kotlin Language", "Programming Language", instructor = instructor),
+                Course(id = null, "React Language", "Framework",instructor)
             )
         courseRepository.saveAll(courses)
     }

@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.implementation
+
 plugins {
     kotlin("jvm") version "2.2.21"
     kotlin("plugin.spring") version "2.2.21"
@@ -21,11 +23,13 @@ repositories {
     mavenCentral()
 }
 
+
 dependencies {
+    testImplementation(platform("org.testcontainers:testcontainers-bom:2.0.2"))
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     runtimeOnly("com.h2database:h2")
-    // runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.postgresql:postgresql")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
@@ -38,6 +42,10 @@ dependencies {
     testImplementation("com.ninja-squad:springmockk:5.0.1")
     testImplementation("org.springframework:spring-webflux")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    //test-containers
+    testImplementation("org.testcontainers:testcontainers:2.0.2")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.2")
+    testImplementation("org.testcontainers:postgresql:1.21.3")
 }
 
 kotlin {
